@@ -14,6 +14,10 @@ export const useGlobalConfig = defineStore('global', {
                 language: browserLanguage,
                 definiteTime: null as number | null,
                 winMusic: false,
+                guaranteedMatch: {
+                    enabled: true,
+                    threshold: 5,
+                },
                 theme: {
                     name: 'dracula',
                     detail: { primary: '#0f5fd3' },
@@ -134,6 +138,18 @@ export const useGlobalConfig = defineStore('global', {
         // 是否播放获奖音乐
         getWinMusic(state) {
             return state.globalConfig.winMusic
+        },
+        // 获取保底匹配配置
+        getGuaranteedMatch(state) {
+            return state.globalConfig.guaranteedMatch
+        },
+        // 获取保底匹配是否启用
+        getGuaranteedMatchEnabled(state) {
+            return state.globalConfig.guaranteedMatch?.enabled ?? true
+        },
+        // 获取保底匹配阈值
+        getGuaranteedMatchThreshold(state) {
+            return state.globalConfig.guaranteedMatch?.threshold ?? 5
         },
     },
     actions: {
@@ -284,6 +300,24 @@ export const useGlobalConfig = defineStore('global', {
         setIsPlayWinMusic(winMusic: boolean) {
             this.globalConfig.winMusic = winMusic
         },
+        // 初始化保底匹配配置（如果不存在）
+        _ensureGuaranteedMatch() {
+            if (!this.globalConfig.guaranteedMatch) {
+                this.globalConfig.guaranteedMatch = { enabled: true, threshold: 5 }
+            }
+        },
+        // 设置保底匹配是否启用
+        setGuaranteedMatchEnabled(enabled: boolean) {
+            this._ensureGuaranteedMatch()
+            this.globalConfig.guaranteedMatch.enabled = enabled
+        },
+        // 设置保底匹配阈值
+        setGuaranteedMatchThreshold(threshold: number) {
+            this._ensureGuaranteedMatch()
+            // 验证阈值范围
+            const validThreshold = Math.max(1, Math.min(100, Math.floor(threshold)))
+            this.globalConfig.guaranteedMatch.threshold = validThreshold
+        },
         // 重置所有配置
         reset() {
             this.globalConfig = {
@@ -294,6 +328,10 @@ export const useGlobalConfig = defineStore('global', {
                 topTitle: i18n.global.t('data.defaultTitle'),
                 language: browserLanguage,
                 definiteTime: null,
+                guaranteedMatch: {
+                    enabled: true,
+                    threshold: 5,
+                },
                 theme: {
                     name: 'dracula',
                     detail: { primary: '#0f5fd3' },

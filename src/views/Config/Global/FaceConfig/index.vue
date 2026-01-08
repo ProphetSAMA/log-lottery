@@ -38,6 +38,8 @@ const {
     importAllConfigData,
     definiteTimeValue,
     isWinMusicValue,
+    guaranteedMatchEnabledValue,
+    guaranteedMatchThresholdValue,
 } = useViewModel()
 </script>
 
@@ -88,7 +90,12 @@ const {
         :reset-pattern="resetPattern"
       />
       <!-- 功能设置 -->
-      <AbilitySetting v-model:definite-time="definiteTimeValue" v-model:win-music="isWinMusicValue" />
+      <AbilitySetting 
+        v-model:definite-time="definiteTimeValue" 
+        v-model:win-music="isWinMusicValue"
+        v-model:guaranteed-match-enabled="guaranteedMatchEnabledValue"
+        v-model:guaranteed-match-threshold="guaranteedMatchThresholdValue"
+      />
     </GridWaterfall>
     <!-- </div> -->
   </div>

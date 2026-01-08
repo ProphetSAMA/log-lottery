@@ -42,6 +42,8 @@ export function useViewModel() {
         getTitleFontSyncGlobal: titleFontSyncGlobal,
         getDefiniteTime: definiteTime,
         getWinMusic: isPlayWinMusic,
+        getGuaranteedMatchEnabled: guaranteedMatchEnabled,
+        getGuaranteedMatchThreshold: guaranteedMatchThreshold,
     } = storeToRefs(globalConfig)
     // three初始值
     const ballRotationY = ref(0)
@@ -381,25 +383,35 @@ export function useViewModel() {
         }
         luckyCount.value = leftover < luckyCount.value ? leftover : luckyCount.value
         
-        // 保底匹配逻辑：筛选连续5次未中奖的人员
-        const guaranteedWinners = personPool.value.filter(person => (person.missCount || 0) >= 5)
+        // 保底匹配逻辑：根据配置选择是否启用以及使用什么阈值
+        const threshold = guaranteedMatchThreshold.value ?? 5
+        const isGuaranteedEnabled = guaranteedMatchEnabled.value ?? true
         
-        // 如果有保底人员且抽奖数量允许
-        if (guaranteedWinners.length > 0) {
-            // 优先选择保底人员
-            const guaranteedCount = Math.min(guaranteedWinners.length, luckyCount.value)
-            luckyTargets.value = guaranteedWinners.slice(0, guaranteedCount)
+        if (isGuaranteedEnabled) {
+            // 筛选连续未中奖达到阈值的人员
+            const guaranteedWinners = personPool.value.filter(person => (person.missCount || 0) >= threshold)
             
-            // 如果保底人员不足，则从剩余人员中随机抽取
-            if (luckyCount.value > guaranteedCount) {
-                const remainingPool = personPool.value.filter(person => (person.missCount || 0) < 5)
-                const remainingCount = luckyCount.value - guaranteedCount
-                const randomWinners = getRandomElements(remainingPool, remainingCount)
-                luckyTargets.value = [...luckyTargets.value, ...randomWinners]
+            // 如果有保底人员且抽奖数量允许
+            if (guaranteedWinners.length > 0) {
+                // 优先选择保底人员
+                const guaranteedCount = Math.min(guaranteedWinners.length, luckyCount.value)
+                luckyTargets.value = guaranteedWinners.slice(0, guaranteedCount)
+                
+                // 如果保底人员不足，则从剩余人员中随机抽取
+                if (luckyCount.value > guaranteedCount) {
+                    const remainingPool = personPool.value.filter(person => (person.missCount || 0) < threshold)
+                    const remainingCount = luckyCount.value - guaranteedCount
+                    const randomWinners = getRandomElements(remainingPool, remainingCount)
+                    luckyTargets.value = [...luckyTargets.value, ...randomWinners]
+                }
+            }
+            else {
+                // 没有保底人员，正常随机抽取
+                luckyTargets.value = getRandomElements(personPool.value, luckyCount.value)
             }
         }
         else {
-            // 没有保底人员，正常随机抽取
+            // 保底匹配功能未启用，直接随机抽取
             luckyTargets.value = getRandomElements(personPool.value, luckyCount.value)
         }
         
