@@ -6,6 +6,17 @@ const definiteTime = defineModel<number | null>('definiteTime', { required: true
 const winMusic = defineModel<boolean>('winMusic', { required: true })
 const guaranteedMatchEnabled = defineModel<boolean>('guaranteedMatchEnabled', { required: true })
 const guaranteedMatchThreshold = defineModel<number>('guaranteedMatchThreshold', { required: true })
+
+// 验证阈值范围
+function validateThreshold() {
+  if (guaranteedMatchThreshold.value < 1) {
+    guaranteedMatchThreshold.value = 1
+  } else if (guaranteedMatchThreshold.value > 100) {
+    guaranteedMatchThreshold.value = 100
+  } else if (!Number.isInteger(guaranteedMatchThreshold.value)) {
+    guaranteedMatchThreshold.value = Math.floor(guaranteedMatchThreshold.value)
+  }
+}
 </script>
 
 <template>
@@ -67,9 +78,14 @@ const guaranteedMatchThreshold = defineModel<number>('guaranteedMatchThreshold',
             </div>
           </label>
           <input
-            v-model.number="guaranteedMatchThreshold" type="number" min="1" max="100"
+            v-model.number="guaranteedMatchThreshold" 
+            type="number" 
+            min="1" 
+            max="100"
+            step="1"
             placeholder="5"
             class="w-full max-w-xs input input-bordered"
+            @blur="validateThreshold"
           >
         </div>
       </div>

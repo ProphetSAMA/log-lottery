@@ -300,19 +300,23 @@ export const useGlobalConfig = defineStore('global', {
         setIsPlayWinMusic(winMusic: boolean) {
             this.globalConfig.winMusic = winMusic
         },
-        // 设置保底匹配是否启用
-        setGuaranteedMatchEnabled(enabled: boolean) {
+        // 初始化保底匹配配置（如果不存在）
+        _ensureGuaranteedMatch() {
             if (!this.globalConfig.guaranteedMatch) {
                 this.globalConfig.guaranteedMatch = { enabled: true, threshold: 5 }
             }
+        },
+        // 设置保底匹配是否启用
+        setGuaranteedMatchEnabled(enabled: boolean) {
+            this._ensureGuaranteedMatch()
             this.globalConfig.guaranteedMatch.enabled = enabled
         },
         // 设置保底匹配阈值
         setGuaranteedMatchThreshold(threshold: number) {
-            if (!this.globalConfig.guaranteedMatch) {
-                this.globalConfig.guaranteedMatch = { enabled: true, threshold: 5 }
-            }
-            this.globalConfig.guaranteedMatch.threshold = threshold
+            this._ensureGuaranteedMatch()
+            // 验证阈值范围
+            const validThreshold = Math.max(1, Math.min(100, Math.floor(threshold)))
+            this.globalConfig.guaranteedMatch.threshold = validThreshold
         },
         // 重置所有配置
         reset() {
