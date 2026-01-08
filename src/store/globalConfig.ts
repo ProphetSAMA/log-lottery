@@ -18,6 +18,7 @@ export const useGlobalConfig = defineStore('global', {
                     enabled: true,
                     threshold: 5,
                     personIds: [] as string[],
+                    drawCount: 0,
                 },
                 theme: {
                     name: 'dracula',
@@ -155,6 +156,10 @@ export const useGlobalConfig = defineStore('global', {
         // 获取保底匹配人员ID列表
         getGuaranteedMatchPersonIds(state) {
             return state.globalConfig.guaranteedMatch?.personIds ?? []
+        },
+        // 获取保底抽奖次数计数
+        getGuaranteedMatchDrawCount(state) {
+            return state.globalConfig.guaranteedMatch?.drawCount ?? 0
         },
     },
     actions: {
@@ -308,10 +313,13 @@ export const useGlobalConfig = defineStore('global', {
         // 初始化保底匹配配置（如果不存在）
         _ensureGuaranteedMatch() {
             if (!this.globalConfig.guaranteedMatch) {
-                this.globalConfig.guaranteedMatch = { enabled: true, threshold: 5, personIds: [] }
+                this.globalConfig.guaranteedMatch = { enabled: true, threshold: 5, personIds: [], drawCount: 0 }
             }
             if (!this.globalConfig.guaranteedMatch.personIds) {
                 this.globalConfig.guaranteedMatch.personIds = []
+            }
+            if (this.globalConfig.guaranteedMatch.drawCount === undefined) {
+                this.globalConfig.guaranteedMatch.drawCount = 0
             }
         },
         // 设置保底匹配是否启用
@@ -351,6 +359,16 @@ export const useGlobalConfig = defineStore('global', {
             this._ensureGuaranteedMatch()
             this.globalConfig.guaranteedMatch.personIds = []
         },
+        // 增加抽奖次数计数
+        incrementGuaranteedMatchDrawCount() {
+            this._ensureGuaranteedMatch()
+            this.globalConfig.guaranteedMatch.drawCount = (this.globalConfig.guaranteedMatch.drawCount || 0) + 1
+        },
+        // 重置抽奖次数计数
+        resetGuaranteedMatchDrawCount() {
+            this._ensureGuaranteedMatch()
+            this.globalConfig.guaranteedMatch.drawCount = 0
+        },
         // 重置所有配置
         reset() {
             this.globalConfig = {
@@ -365,6 +383,7 @@ export const useGlobalConfig = defineStore('global', {
                     enabled: true,
                     threshold: 5,
                     personIds: [] as string[],
+                    drawCount: 0,
                 },
                 theme: {
                     name: 'dracula',

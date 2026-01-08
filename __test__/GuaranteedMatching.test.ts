@@ -284,8 +284,8 @@ describe('Guaranteed Matching Feature', () => {
         expect(remainingPool).toHaveLength(2)
     })
 
-    // 测试手动指定保底人员ID的功能
-    it('should prioritize manually specified person IDs as guaranteed winners', () => {
+    // 测试手动指定保底人员ID的功能 - 仅在第6次抽奖时生效
+    it('should prioritize manually specified person IDs as guaranteed winners on 6th draw', () => {
         const personPool: IPersonConfig[] = [
             {
                 id: 1,
@@ -346,10 +346,18 @@ describe('Guaranteed Matching Feature', () => {
         const manualGuaranteedIds = ['U001']
         const threshold = 5
         
-        // 手动指定的保底人员
-        const manualGuaranteedWinners = personPool.filter(person => 
-            manualGuaranteedIds.includes(person.uid)
-        )
+        // 测试第6次抽奖（drawCount % 6 === 0）
+        const drawCount = 6 // 或 0, 12, 18 等
+        const isSixthDraw = drawCount % 6 === 0
+        
+        let manualGuaranteedWinners: IPersonConfig[] = []
+        
+        // 只在第6次抽奖时应用手动保底
+        if (isSixthDraw && manualGuaranteedIds.length > 0) {
+            manualGuaranteedWinners = personPool.filter(person => 
+                manualGuaranteedIds.includes(person.uid)
+            )
+        }
         
         // 自动保底人员（排除手动指定的）
         const autoGuaranteedWinners = personPool.filter(person => 
@@ -359,6 +367,7 @@ describe('Guaranteed Matching Feature', () => {
         // 合并保底人员
         const allGuaranteedWinners = [...manualGuaranteedWinners, ...autoGuaranteedWinners]
         
+        expect(isSixthDraw).toBe(true)
         expect(manualGuaranteedWinners).toHaveLength(1)
         expect(manualGuaranteedWinners[0].uid).toBe('U001')
         expect(autoGuaranteedWinners).toHaveLength(1)
@@ -366,6 +375,74 @@ describe('Guaranteed Matching Feature', () => {
         expect(allGuaranteedWinners).toHaveLength(2)
         expect(allGuaranteedWinners.map(p => p.uid)).toEqual(['U001', 'U003'])
     })
+
+    it('should NOT apply manually specified person IDs on non-6th draws', () => {
+        const personPool: IPersonConfig[] = [
+            {
+                id: 1,
+                uid: 'U001',
+                uuid: 'uuid-1',
+                name: 'Manual Guaranteed 1',
+                department: 'Dept A',
+                identity: 'Identity A',
+                avatar: '',
+                isWin: false,
+                x: 0,
+                y: 0,
+                createTime: '',
+                updateTime: '',
+                prizeName: [],
+                prizeId: [],
+                prizeTime: [],
+                missCount: 0,
+            },
+            {
+                id: 2,
+                uid: 'U002',
+                uuid: 'uuid-2',
+                name: 'Auto Guaranteed',
+                department: 'Dept B',
+                identity: 'Identity B',
+                avatar: '',
+                isWin: false,
+                x: 0,
+                y: 0,
+                createTime: '',
+                updateTime: '',
+                prizeName: [],
+                prizeId: [],
+                prizeTime: [],
+                missCount: 5,
+            },
+        ]
+
+        const manualGuaranteedIds = ['U001']
+        const threshold = 5
+        
+        // 测试第3次抽奖（不是第6次）
+        const drawCount = 3
+        const isSixthDraw = drawCount % 6 === 0
+        
+        let manualGuaranteedWinners: IPersonConfig[] = []
+        
+        // 只在第6次抽奖时应用手动保底
+        if (isSixthDraw && manualGuaranteedIds.length > 0) {
+            manualGuaranteedWinners = personPool.filter(person => 
+                manualGuaranteedIds.includes(person.uid)
+            )
+        }
+        
+        // 自动保底人员仍然有效
+        const autoGuaranteedWinners = personPool.filter(person => 
+            (person.missCount || 0) >= threshold && !manualGuaranteedIds.includes(person.uid)
+        )
+        
+        expect(isSixthDraw).toBe(false)
+        expect(manualGuaranteedWinners).toHaveLength(0) // 不是第6次，手动保底不生效
+        expect(autoGuaranteedWinners).toHaveLength(1) // 自动保底仍然生效
+        expect(autoGuaranteedWinners[0].uid).toBe('U002')
+    })
+
 
     it('should handle multiple manually specified person IDs', () => {
         const personPool: IPersonConfig[] = [
