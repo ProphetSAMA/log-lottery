@@ -44,6 +44,7 @@ export function useViewModel() {
         getWinMusic: isPlayWinMusic,
         getGuaranteedMatchEnabled: guaranteedMatchEnabled,
         getGuaranteedMatchThreshold: guaranteedMatchThreshold,
+        getGuaranteedMatchPersonIds: guaranteedMatchPersonIds,
     } = storeToRefs(globalConfig)
     // three初始值
     const ballRotationY = ref(0)
@@ -386,20 +387,33 @@ export function useViewModel() {
         // 保底匹配逻辑：根据配置选择是否启用以及使用什么阈值
         const threshold = guaranteedMatchThreshold.value ?? 5
         const isGuaranteedEnabled = guaranteedMatchEnabled.value ?? true
+        const manualGuaranteedIds = guaranteedMatchPersonIds.value ?? []
         
         if (isGuaranteedEnabled) {
-            // 筛选连续未中奖达到阈值的人员
-            const guaranteedWinners = personPool.value.filter(person => (person.missCount || 0) >= threshold)
+            // 第一优先级：手动指定的保底人员（通过uid匹配）
+            const manualGuaranteedWinners = personPool.value.filter(person => 
+                manualGuaranteedIds.includes(person.uid)
+            )
+            
+            // 第二优先级：连续未中奖达到阈值的人员（排除已经在手动保底列表中的）
+            const autoGuaranteedWinners = personPool.value.filter(person => 
+                (person.missCount || 0) >= threshold && !manualGuaranteedIds.includes(person.uid)
+            )
+            
+            // 合并保底人员列表
+            const allGuaranteedWinners = [...manualGuaranteedWinners, ...autoGuaranteedWinners]
             
             // 如果有保底人员且抽奖数量允许
-            if (guaranteedWinners.length > 0) {
+            if (allGuaranteedWinners.length > 0) {
                 // 优先选择保底人员
-                const guaranteedCount = Math.min(guaranteedWinners.length, luckyCount.value)
-                luckyTargets.value = guaranteedWinners.slice(0, guaranteedCount)
+                const guaranteedCount = Math.min(allGuaranteedWinners.length, luckyCount.value)
+                luckyTargets.value = allGuaranteedWinners.slice(0, guaranteedCount)
                 
                 // 如果保底人员不足，则从剩余人员中随机抽取
                 if (luckyCount.value > guaranteedCount) {
-                    const remainingPool = personPool.value.filter(person => (person.missCount || 0) < threshold)
+                    const remainingPool = personPool.value.filter(person => 
+                        (person.missCount || 0) < threshold && !manualGuaranteedIds.includes(person.uid)
+                    )
                     const remainingCount = luckyCount.value - guaranteedCount
                     const randomWinners = getRandomElements(remainingPool, remainingCount)
                     luckyTargets.value = [...luckyTargets.value, ...randomWinners]

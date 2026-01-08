@@ -6,6 +6,7 @@ const definiteTime = defineModel<number | null>('definiteTime', { required: true
 const winMusic = defineModel<boolean>('winMusic', { required: true })
 const guaranteedMatchEnabled = defineModel<boolean>('guaranteedMatchEnabled', { required: true })
 const guaranteedMatchThreshold = defineModel<number>('guaranteedMatchThreshold', { required: true })
+const guaranteedMatchPersonIds = defineModel<string>('guaranteedMatchPersonIds', { required: true })
 
 // 验证阈值范围
 function validateThreshold() {
@@ -86,6 +87,26 @@ function validateThreshold() {
             placeholder="5"
             class="w-full max-w-xs input input-bordered"
             @blur="validateThreshold"
+          >
+        </div>
+      </div>
+    </label>
+    <label v-if="guaranteedMatchEnabled" class="flex flex-row items-center form-control">
+      <div class="">
+        <div class="label flex flex-col justify-start items-start">
+          <label class="label">
+            <span class="label-text text-left">{{ t('table.guaranteedPersonIds') }}</span>
+            <div class="tooltip" :data-tip="t('tooltip.guaranteedPersonIds')">
+              <button class="btn btn-circle h-4 hover:bg-base-300">
+                ?
+              </button>
+            </div>
+          </label>
+          <input
+            v-model="guaranteedMatchPersonIds" 
+            type="text" 
+            :placeholder="t('placeHolder.guaranteedPersonIds')"
+            class="w-full max-w-xs input input-bordered"
           >
         </div>
       </div>
