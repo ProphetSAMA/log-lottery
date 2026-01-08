@@ -110,6 +110,7 @@ export const usePersonConfig = defineStore('person', () => {
                 personConfig.value.allPersonList[i].prizeName = []
                 personConfig.value.allPersonList[i].prizeTime = []
                 personConfig.value.allPersonList[i].prizeId = []
+                personConfig.value.allPersonList[i].missCount = 0
                 personDb.updateData('allPersonList', toRaw(personConfig.value.allPersonList[i]))
                 break
             }
@@ -156,6 +157,7 @@ export const usePersonConfig = defineStore('person', () => {
             item.prizeName = []
             item.prizeTime = []
             item.prizeId = []
+            item.missCount = 0
         })
         personConfig.value.alreadyPersonList = []
         const allPersonListRaw = toRaw(personConfig.value.allPersonList)
@@ -181,6 +183,24 @@ export const usePersonConfig = defineStore('person', () => {
         personDb.deleteAll('allPersonList')
         personDb.deleteAll('alreadyPersonList')
     }
+    // 增加未中奖次数
+    function incrementMissCount(personIds: number[]) {
+        personConfig.value.allPersonList.forEach((person: IPersonConfig) => {
+            if (!personIds.includes(person.id)) {
+                person.missCount = (person.missCount || 0) + 1
+                personDb.updateData('allPersonList', toRaw(person))
+            }
+        })
+    }
+    // 重置指定人员的未中奖次数
+    function resetMissCount(personIds: number[]) {
+        personConfig.value.allPersonList.forEach((person: IPersonConfig) => {
+            if (personIds.includes(person.id)) {
+                person.missCount = 0
+                personDb.updateData('allPersonList', toRaw(person))
+            }
+        })
+    }
     return {
         personConfig,
         getPersonConfig,
@@ -199,5 +219,7 @@ export const usePersonConfig = defineStore('person', () => {
         resetAlreadyPerson,
         setDefaultPersonList,
         reset,
+        incrementMissCount,
+        resetMissCount,
     }
 })

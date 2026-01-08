@@ -33,6 +33,7 @@ export function addOtherInfo(personList: any[]) {
         personList[i].prizeId = []
         personList[i].isWin = false
         personList[i].uuid = uuidv4()
+        personList[i].missCount = 0
     }
 
     return personList
