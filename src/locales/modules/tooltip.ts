@@ -14,6 +14,8 @@ export const tooltipEn = {
     edit: 'Edit',
     delete: 'Delete',
     timedStop: 'After the lottery begins, it will stop at a scheduled time by default, set to 0, with the unit in seconds. A value of 0 disables the scheduled stopping function',
+    guaranteedMatch: 'Automatically select people who have missed a certain number of times as guaranteed winners',
+    guaranteedMatchThreshold: 'Number of consecutive misses required to qualify for guaranteed selection (default: 5)',
     uploadImage: 'Upload Image',
     pleaseGoto: 'Please go to',
 }
@@ -34,6 +36,8 @@ export const tooltipZhCn = {
     edit: '编辑',
     delete: '删除',
     timedStop: '开始抽奖过后定时停止，默认为0，单位为秒，0为关闭定时停止功能',
+    guaranteedMatch: '自动选择连续未中奖达到一定次数的人员作为保底中奖者',
+    guaranteedMatchThreshold: '连续未中奖次数达到此阈值后将被优先选中（默认：5次）',
     uploadImage: '上传图片',
     pleaseGoto: '请先前往',
 }
