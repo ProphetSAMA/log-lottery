@@ -213,10 +213,10 @@ export function useViewModel() {
     })
     watch(guaranteedMatchPersonIdsValue, () => {
         // 将逗号分隔的字符串转换为数组，并去除空白
-        const personIds = guaranteedMatchPersonIdsValue.value
-            .split(',')
-            .map(id => id.trim())
-            .filter(id => id.length > 0)
+        const inputValue = guaranteedMatchPersonIdsValue.value.trim()
+        const personIds = inputValue.length > 0
+            ? inputValue.split(',').map(id => id.trim()).filter(id => id.length > 0)
+            : []
         globalConfig.setGuaranteedMatchPersonIds(personIds)
     })
     watch(textSizeValue, (val: number) => {

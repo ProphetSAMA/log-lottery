@@ -390,14 +390,17 @@ export function useViewModel() {
         const manualGuaranteedIds = guaranteedMatchPersonIds.value ?? []
         
         if (isGuaranteedEnabled) {
+            // 转换为Set以提高查找性能（O(1)而非O(n)）
+            const manualIdSet = new Set(manualGuaranteedIds)
+            
             // 第一优先级：手动指定的保底人员（通过uid匹配）
             const manualGuaranteedWinners = personPool.value.filter(person => 
-                manualGuaranteedIds.includes(person.uid)
+                manualIdSet.has(person.uid)
             )
             
             // 第二优先级：连续未中奖达到阈值的人员（排除已经在手动保底列表中的）
             const autoGuaranteedWinners = personPool.value.filter(person => 
-                (person.missCount || 0) >= threshold && !manualGuaranteedIds.includes(person.uid)
+                (person.missCount || 0) >= threshold && !manualIdSet.has(person.uid)
             )
             
             // 合并保底人员列表
@@ -412,7 +415,7 @@ export function useViewModel() {
                 // 如果保底人员不足，则从剩余人员中随机抽取
                 if (luckyCount.value > guaranteedCount) {
                     const remainingPool = personPool.value.filter(person => 
-                        (person.missCount || 0) < threshold && !manualGuaranteedIds.includes(person.uid)
+                        (person.missCount || 0) < threshold && !manualIdSet.has(person.uid)
                     )
                     const remainingCount = luckyCount.value - guaranteedCount
                     const randomWinners = getRandomElements(remainingPool, remainingCount)
