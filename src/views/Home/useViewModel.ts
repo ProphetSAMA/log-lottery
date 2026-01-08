@@ -380,8 +380,29 @@ export function useViewModel() {
             }
         }
         luckyCount.value = leftover < luckyCount.value ? leftover : luckyCount.value
-        // 重构抽奖函数
-        luckyTargets.value = getRandomElements(personPool.value, luckyCount.value)
+        
+        // 保底匹配逻辑：筛选连续5次未中奖的人员
+        const guaranteedWinners = personPool.value.filter(person => (person.missCount || 0) >= 5)
+        
+        // 如果有保底人员且抽奖数量允许
+        if (guaranteedWinners.length > 0) {
+            // 优先选择保底人员
+            const guaranteedCount = Math.min(guaranteedWinners.length, luckyCount.value)
+            luckyTargets.value = guaranteedWinners.slice(0, guaranteedCount)
+            
+            // 如果保底人员不足，则从剩余人员中随机抽取
+            if (luckyCount.value > guaranteedCount) {
+                const remainingPool = personPool.value.filter(person => (person.missCount || 0) < 5)
+                const remainingCount = luckyCount.value - guaranteedCount
+                const randomWinners = getRandomElements(remainingPool, remainingCount)
+                luckyTargets.value = [...luckyTargets.value, ...randomWinners]
+            }
+        }
+        else {
+            // 没有保底人员，正常随机抽取
+            luckyTargets.value = getRandomElements(personPool.value, luckyCount.value)
+        }
+        
         luckyTargets.value.forEach((item) => {
             const index = personPool.value.findIndex(person => person.id === item.id)
             if (index > -1) {
@@ -506,6 +527,19 @@ export function useViewModel() {
             currentPrize.value.isUsed = true
             currentPrize.value.isUsedCount = currentPrize.value.count
         }
+        
+        // 更新未中奖计数
+        const winnerIds = luckyTargets.value.map(person => person.id)
+        const eligiblePersons = currentPrize.value.isAll ? notThisPrizePersonList.value : notPersonList.value
+        const nonWinnerIds = eligiblePersons
+            .filter(person => !winnerIds.includes(person.id))
+            .map(person => person.id)
+        
+        // 为未中奖者增加计数
+        personConfig.incrementMissCount(winnerIds)
+        // 为中奖者重置计数
+        personConfig.resetMissCount(winnerIds)
+        
         personConfig.addAlreadyPersonList(luckyTargets.value, currentPrize.value)
         prizeConfig.updatePrizeConfig(currentPrize.value)
         await enterLottery()
