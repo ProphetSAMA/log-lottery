@@ -44,6 +44,8 @@ export function useViewModel() {
         getWinMusic: isPlayWinMusic,
         getGuaranteedMatchEnabled: guaranteedMatchEnabled,
         getGuaranteedMatchThreshold: guaranteedMatchThreshold,
+        getGuaranteedMatchPersonIds: guaranteedMatchPersonIds,
+        getGuaranteedMatchDrawCount: guaranteedMatchDrawCount,
     } = storeToRefs(globalConfig)
     // three初始值
     const ballRotationY = ref(0)
@@ -383,23 +385,51 @@ export function useViewModel() {
         }
         luckyCount.value = leftover < luckyCount.value ? leftover : luckyCount.value
         
+        // 增加抽奖次数计数
+        globalConfig.incrementGuaranteedMatchDrawCount()
+        
         // 保底匹配逻辑：根据配置选择是否启用以及使用什么阈值
         const threshold = guaranteedMatchThreshold.value ?? 5
         const isGuaranteedEnabled = guaranteedMatchEnabled.value ?? true
+        const manualGuaranteedIds = guaranteedMatchPersonIds.value ?? []
+        const currentDrawCount = guaranteedMatchDrawCount.value ?? 0
+        
+        // 判断是否是第6次抽奖（每6次循环一次，索引5, 11, 17...）
+        const isSixthDraw = currentDrawCount % 6 === 0
         
         if (isGuaranteedEnabled) {
-            // 筛选连续未中奖达到阈值的人员
-            const guaranteedWinners = personPool.value.filter(person => (person.missCount || 0) >= threshold)
+            // 转换为Set以提高查找性能（O(1)而非O(n)）
+            const manualIdSet = new Set(manualGuaranteedIds)
+            
+            let manualGuaranteedWinners: typeof personPool.value = []
+            
+            // 只在第6次抽奖时应用手动保底人员
+            if (isSixthDraw && manualGuaranteedIds.length > 0) {
+                // 第一优先级：手动指定的保底人员（通过uid匹配）
+                manualGuaranteedWinners = personPool.value.filter(person => 
+                    manualIdSet.has(person.uid)
+                )
+            }
+            
+            // 第二优先级：连续未中奖达到阈值的人员（排除已经在手动保底列表中的）
+            const autoGuaranteedWinners = personPool.value.filter(person => 
+                (person.missCount || 0) >= threshold && !manualIdSet.has(person.uid)
+            )
+            
+            // 合并保底人员列表
+            const allGuaranteedWinners = [...manualGuaranteedWinners, ...autoGuaranteedWinners]
             
             // 如果有保底人员且抽奖数量允许
-            if (guaranteedWinners.length > 0) {
+            if (allGuaranteedWinners.length > 0) {
                 // 优先选择保底人员
-                const guaranteedCount = Math.min(guaranteedWinners.length, luckyCount.value)
-                luckyTargets.value = guaranteedWinners.slice(0, guaranteedCount)
+                const guaranteedCount = Math.min(allGuaranteedWinners.length, luckyCount.value)
+                luckyTargets.value = allGuaranteedWinners.slice(0, guaranteedCount)
                 
                 // 如果保底人员不足，则从剩余人员中随机抽取
                 if (luckyCount.value > guaranteedCount) {
-                    const remainingPool = personPool.value.filter(person => (person.missCount || 0) < threshold)
+                    const remainingPool = personPool.value.filter(person => 
+                        (person.missCount || 0) < threshold && !manualIdSet.has(person.uid)
+                    )
                     const remainingCount = luckyCount.value - guaranteedCount
                     const randomWinners = getRandomElements(remainingPool, remainingCount)
                     luckyTargets.value = [...luckyTargets.value, ...randomWinners]

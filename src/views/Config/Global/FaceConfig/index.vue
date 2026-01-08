@@ -40,6 +40,7 @@ const {
     isWinMusicValue,
     guaranteedMatchEnabledValue,
     guaranteedMatchThresholdValue,
+    guaranteedMatchPersonIdsValue,
 } = useViewModel()
 </script>
 
@@ -95,6 +96,7 @@ const {
         v-model:win-music="isWinMusicValue"
         v-model:guaranteed-match-enabled="guaranteedMatchEnabledValue"
         v-model:guaranteed-match-threshold="guaranteedMatchThresholdValue"
+        v-model:guaranteed-match-person-ids="guaranteedMatchPersonIdsValue"
       />
     </GridWaterfall>
     <!-- </div> -->

@@ -35,6 +35,7 @@ export function useViewModel() {
         getWinMusic: isWinMusic,
         getGuaranteedMatchEnabled: guaranteedMatchEnabled,
         getGuaranteedMatchThreshold: guaranteedMatchThreshold,
+        getGuaranteedMatchPersonIds: guaranteedMatchPersonIds,
     } = storeToRefs(globalConfig)
     const { getAlreadyPersonList: alreadyPersonList, getNotPersonList: notPersonList } = storeToRefs(personConfig)
 
@@ -59,6 +60,7 @@ export function useViewModel() {
     const isWinMusicValue = ref(structuredClone(isWinMusic.value))
     const guaranteedMatchEnabledValue = ref(structuredClone(guaranteedMatchEnabled.value))
     const guaranteedMatchThresholdValue = ref(structuredClone(guaranteedMatchThreshold.value))
+    const guaranteedMatchPersonIdsValue = ref(guaranteedMatchPersonIds.value.join(','))
     const formData = ref({
         rowCount: rowCountValue,
     })
@@ -209,6 +211,14 @@ export function useViewModel() {
     watch(guaranteedMatchThresholdValue, () => {
         globalConfig.setGuaranteedMatchThreshold(guaranteedMatchThresholdValue.value)
     })
+    watch(guaranteedMatchPersonIdsValue, () => {
+        // 将逗号分隔的字符串转换为数组，并去除空白
+        const inputValue = guaranteedMatchPersonIdsValue.value.trim()
+        const personIds = inputValue.length > 0
+            ? inputValue.split(',').map(id => id.trim()).filter(id => id.length > 0)
+            : []
+        globalConfig.setGuaranteedMatchPersonIds(personIds)
+    })
     watch(textSizeValue, (val: number) => {
         globalConfig.setTextSize(val)
     })
@@ -249,5 +259,6 @@ export function useViewModel() {
         isWinMusicValue,
         guaranteedMatchEnabledValue,
         guaranteedMatchThresholdValue,
+        guaranteedMatchPersonIdsValue,
     }
 }

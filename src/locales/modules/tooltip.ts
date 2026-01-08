@@ -16,6 +16,7 @@ export const tooltipEn = {
     timedStop: 'After the lottery begins, it will stop at a scheduled time by default, set to 0, with the unit in seconds. A value of 0 disables the scheduled stopping function',
     guaranteedMatch: 'Automatically select people who have missed a certain number of times as guaranteed winners',
     guaranteedMatchThreshold: 'Number of consecutive misses required to qualify for guaranteed selection (default: 5)',
+    guaranteedPersonIds: 'Manually specify person IDs (uid) that should be guaranteed to win on every 6th lottery draw. Enter multiple IDs separated by commas (e.g., U001,U002,U003). After 5 lottery draws, these people will be prioritized in the 6th draw.',
     uploadImage: 'Upload Image',
     pleaseGoto: 'Please go to',
 }
@@ -38,6 +39,7 @@ export const tooltipZhCn = {
     timedStop: '开始抽奖过后定时停止，默认为0，单位为秒，0为关闭定时停止功能',
     guaranteedMatch: '自动选择连续未中奖达到一定次数的人员作为保底中奖者',
     guaranteedMatchThreshold: '连续未中奖次数达到此阈值后将被优先选中（默认：5次）',
+    guaranteedPersonIds: '手动指定在每第6次抽奖时保底中奖的人员编号（uid）。输入多个编号时用逗号分隔（例如：U001,U002,U003）。全局抽奖5次后，第6次抽奖时这些人员将被优先选中。',
     uploadImage: '上传图片',
     pleaseGoto: '请先前往',
 }

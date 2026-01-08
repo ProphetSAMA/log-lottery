@@ -6,6 +6,7 @@ export const placeHolderEn = {
     timedStop: 'will stop at a scheduled time after starting',
     imageName: 'Image Name',
     personName: 'Please enter name',
+    guaranteedPersonIds: 'U001,U002,U003',
 }
 
 export const placeHolderZhCn = {
@@ -16,6 +17,7 @@ export const placeHolderZhCn = {
     timedStop: '开始后定时抽取',
     imageName: '图片名称',
     personName: '请填写姓名',
+    guaranteedPersonIds: 'U001,U002,U003',
 }
 
 export const placeHolder = {
