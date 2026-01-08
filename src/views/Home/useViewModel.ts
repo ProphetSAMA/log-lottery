@@ -530,12 +530,8 @@ export function useViewModel() {
         
         // 更新未中奖计数
         const winnerIds = luckyTargets.value.map(person => person.id)
-        const eligiblePersons = currentPrize.value.isAll ? notThisPrizePersonList.value : notPersonList.value
-        const nonWinnerIds = eligiblePersons
-            .filter(person => !winnerIds.includes(person.id))
-            .map(person => person.id)
         
-        // 为未中奖者增加计数
+        // 为未中奖者增加计数（传入中奖者ID，函数会为不在列表中的人增加计数）
         personConfig.incrementMissCount(winnerIds)
         // 为中奖者重置计数
         personConfig.resetMissCount(winnerIds)
